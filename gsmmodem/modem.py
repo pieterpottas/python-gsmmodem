@@ -173,7 +173,11 @@ class GsmModem(SerialComms):
         self.log.info('Connecting to modem on port %s at %dbps', self.port, self.baudrate)        
         super(GsmModem, self).connect()
         # Send some initialization commands to the modem
-        try:        
+        try:
+            self.write('AT&F')  # reset all
+            self.log.info('Waiting for modem after master-reset')
+            time.sleep(10) # wait for modem to reset and reconnect
+            super(GsmModem, self).connect()
             self.write('ATZ') # reset configuration
         except CommandError:
             # Some modems require a SIM PIN at this stage already; unlock it now
@@ -182,6 +186,8 @@ class GsmModem(SerialComms):
             self.write('AT+CMEE=1', parseError=False)            
             self._unlockSim(pin)
             pinCheckComplete = True
+
+            # TODO: Full reset required here?
             self.write('ATZ') # reset configuration        
         else:
             pinCheckComplete = False
