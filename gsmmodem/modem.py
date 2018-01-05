@@ -987,9 +987,12 @@ class GsmModem(SerialComms):
         if cmtiMatch:
             msgMemory = cmtiMatch.group(1)
             msgIndex = cmtiMatch.group(2)
-            sms = self.readStoredSms(msgIndex, msgMemory)
-            self.deleteStoredSms(msgIndex)
-            self.smsReceivedCallback(sms)
+            try:
+                sms = self.readStoredSms(msgIndex, msgMemory)
+                self.deleteStoredSms(msgIndex)
+                self.smsReceivedCallback(sms)
+            except Exception, e:
+                self.log.exception(e) # TODO: fix (OK received after +CMGR=0) bug
     
     def _handleSmsStatusReport(self, notificationLine):
         """ Handler for SMS status reports """
